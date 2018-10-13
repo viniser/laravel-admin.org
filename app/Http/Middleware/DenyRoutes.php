@@ -7,27 +7,20 @@ use Symfony\Component\HttpFoundation\Request;
 
 class DenyRoutes
 {
-    protected $denyDeleteMethod = true;
+    protected $disabledMethods = ['DELETE', 'PUT'];
 
     protected $routes = [
         'post' => [
-            'demo/media/upload',
-            'demo/helpers/terminal/database',
-            'demo/helpers/terminal/artisan',
-            'demo/helpers/scaffold',
-        ],
-        'delete' => [
-            'demo/media/delete',
-
-        ],
-        'put' => [
-
+            'media/upload',
+            'helpers/terminal/database',
+            'helpers/terminal/artisan',
+            'helpers/scaffold',
         ],
     ];
 
     public function handle(Request $request, \Closure $next)
     {
-        if ($this->denyDeleteMethod && $request->isMethod('delete')) {
+        if (in_array($request->getMethod(), $this->disabledMethods)) {
             Permission::error();
         }
 

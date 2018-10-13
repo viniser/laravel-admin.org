@@ -2,30 +2,28 @@
 
 namespace App\Admin\Controllers;
 
+use App\Models\Post;
 use App\Models\PostComment;
+use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
-use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use App\Http\Controllers\Controller;
-use Encore\Admin\Controllers\ModelForm;
 
 class PostCommentController extends Controller
 {
-    use ModelForm;
+    use HasResourceActions;
 
     /**
      * Index interface.
      *
      * @return Content
      */
-    public function index($id)
+    public function index(Content $content)
     {
-        return Admin::content(function (Content $content) use ($id) {
-            $content->header('Post comments');
-            $content->description('Post comments');
-            $content->body($this->grid($id));
-        });
+        return $content->header('Post comments')
+            ->description('Post comments')
+            ->body($this->grid());
     }
 
     /**
@@ -34,13 +32,12 @@ class PostCommentController extends Controller
      * @param $id
      * @return Content
      */
-    public function edit($id)
+    public function edit($id, Content $content)
     {
-        return Admin::content(function (Content $content) use ($id) {
-            $content->header('header');
-            $content->description('description');
-            $content->body($this->form()->edit($id));
-        });
+        return $content
+            ->header('header')
+            ->description('description')
+            ->body($this->form()->edit($id));
     }
 
     /**
@@ -48,13 +45,12 @@ class PostCommentController extends Controller
      *
      * @return Content
      */
-    public function create()
+    public function create(Content $content)
     {
-        return Admin::content(function (Content $content) {
-            $content->header('header');
-            $content->description('description');
-            $content->body($this->form());
-        });
+        return $content
+            ->header('header')
+            ->description('description')
+            ->body($this->form());
     }
 
     /**
@@ -62,22 +58,25 @@ class PostCommentController extends Controller
      *
      * @return Grid
      */
-    protected function grid($id)
+    protected function grid()
     {
-        return Admin::grid(PostComment::class, function (Grid $grid) use ($id) {
+        $grid = new Grid(new PostComment());
 
-            $grid->model()->ofPost($id);
+        if ($post = request('post_id')) {
+            $grid->model()->ofPost($post);
+        }
 
-            $grid->id('ID')->sortable();
-            $grid->post()->title('Post');
-            $grid->content()->editable();
-            $grid->created_at();
-            $grid->updated_at();
+        $grid->id('ID')->sortable();
+        $grid->post()->title('Post');
+        $grid->content()->editable();
+        $grid->created_at();
+        $grid->updated_at();
 
-            $grid->filter(function ($filter) {
-                $filter->like('content');
-            });
+        $grid->filter(function ($filter) {
+            $filter->like('content');
         });
+
+        return $grid;
     }
 
     /**
@@ -87,13 +86,16 @@ class PostCommentController extends Controller
      */
     protected function form()
     {
-        return Admin::form(PostComment::class, function (Form $form) {
+        $form = new Form(new PostComment());
 
-            $form->display('id', 'ID');
+        $form->display('id', 'ID');
 
-            $form->text('content');
-            $form->display('created_at', 'Created At');
-            $form->display('updated_at', 'Updated At');
-        });
+        $form->select('post_id')->options(Post::all()->pluck('title', 'id'))->value(request('post_id'));
+        $form->textarea('content');
+
+        $form->display('created_at', 'Created At');
+        $form->display('updated_at', 'Updated At');
+
+        return $form;
     }
 }

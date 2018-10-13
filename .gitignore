@@ -3,6 +3,7 @@
 /public/storage
 /public/uploads
 /storage/*.key
+/storage/debugbar
 /vendor
 /.idea
 /.vagrant
@@ -10,3 +11,4 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+.php_cs.cache
